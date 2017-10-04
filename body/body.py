@@ -421,6 +421,7 @@ class MainBody(telepot.helper.ChatHandler):
             elif query_data == 'remove':
                 l = retrieve_items(chat_id)
                 if l == []:
+                    self.stage = "01"
                     self.sender.sendMessage(
                         'You have no item posted. To post a new item, start by choosing a category from below.',
                         reply_markup=keyboard_type)
