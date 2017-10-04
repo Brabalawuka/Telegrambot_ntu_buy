@@ -9,7 +9,7 @@ from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from telepot.delegate import pave_event_space, create_open, per_chat_id
 from Goods import save_to_json, retrieve_items, fetch_item_type
-from ZZsearch3_1 import split_keywords, search_amazon, search_carousell
+from ZZsearch import split_keywords, search_amazon, search_carousell
 import time
 from datetime import datetime
 import json
