@@ -1,3 +1,6 @@
+# 05/10/17, based on 0.3.0
+# Added a Return button for buyers
+
 # First written on 02/10/17, based on body 0.2.3
 # Removed the function to save in Excel file
 # Wrapped buyer-side features into two functions: buyer_func and buyer_selectItem
@@ -78,7 +81,8 @@ keyboard_type = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text
                                                       [InlineKeyboardButton(text='Furniture&Home', callback_data='furniture&home')],
                                                       [InlineKeyboardButton(text='Clothing&Accessories', callback_data='clothing&accessories')],
                                                       [InlineKeyboardButton(text='Electronic Gadgets', callback_data='gadgets')],
-                                                      [InlineKeyboardButton(text='Others', callback_data='others')]
+                                                      [InlineKeyboardButton(text='Others', callback_data='others')],
+                                                      [InlineKeyboardButton(text='Back to Start', callback_data='seller_cancel')]
                                                       ])
 
 keyboard_cancel_input = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Cancel', callback_data='seller_cancel')]])
@@ -535,7 +539,7 @@ class MainBody(telepot.helper.ChatHandler):
         bot.answerCallbackQuery(query_id)
 
 
-bot = telepot.DelegatorBot('396242409:AAFPS04xPoPAxRx9YlAopslwP6HJojLQR4c',
+bot = telepot.DelegatorBot("421312469:AAHaMT4m9299GcHTyIPDj8rzfx0M-oFJBmw",
                            [pave_event_space()(per_chat_id(), create_open, MainBody, timeout=180)])
 
 MessageLoop(bot).run_as_thread()
