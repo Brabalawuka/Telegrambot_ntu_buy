@@ -4,3 +4,4 @@ datetime
 openpyxl
 telepot
 requests
+lxml
