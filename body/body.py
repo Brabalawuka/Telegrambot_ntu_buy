@@ -262,6 +262,9 @@ class MainBody(telepot.helper.ChatHandler):
                         # the following line saves the 'good' object to the .txt file
                         pprint(good)
                         save_to_json(good)
+                  #====================================================
+                        good = {}
+                  #===============================      
 
                     elif self.stage == '16':
                         self.sender.sendMessage('Wait patiently lah pls.', reply_markup=keyboard_cancel_input2)
@@ -298,6 +301,9 @@ class MainBody(telepot.helper.ChatHandler):
                         self.sender.sendMessage('All set. Now please just wait patiently for a buyer to contact you...', reply_markup=keyboard_cancel_input2)
                         pprint(good)
                         save_to_json(good)
+                 #====================================================
+                        good = {}
+                  #===============================   
 
                     elif self.stage == '26':
                         self.sender.sendMessage('Patience, friend, patience.', reply_markup=keyboard_cancel_input2)
@@ -327,6 +333,9 @@ class MainBody(telepot.helper.ChatHandler):
                         self.sender.sendMessage('Great. Now just wait for a buyer to contact you.', reply_markup=keyboard_cancel_input2)
                         pprint(good)
                         save_to_json(good)
+                  #====================================================
+                        good = {}
+                  #===============================   
 
                     elif self.stage == '35':
                         self.sender.sendMessage('Patience lah pls', reply_markup=keyboard_cancel_input2)
@@ -357,6 +366,9 @@ class MainBody(telepot.helper.ChatHandler):
                         self.sender.sendMessage('We have recorded that down. Now just wait patiently for a buyer...', reply_markup=keyboard_cancel_input2)
                         pprint(good)
                         save_to_json(good)
+                  #====================================================
+                        good = {}
+                  #===============================   
 
                     elif self.stage == '44':
                         self.sender.sendMessage('Patience lah bro, it will sell.', reply_markup=keyboard_cancel_input2)
@@ -386,6 +398,9 @@ class MainBody(telepot.helper.ChatHandler):
                         self.sender.sendMessage('The information has been recorded. Now just wait patiently for a buyer.', reply_markup=keyboard_cancel_input2)
                         pprint(good)
                         save_to_json(good)
+                  #====================================================
+                        good = {}
+                  #===============================   
 
                     elif self.stage == '55':
                         self.sender.sendMessage('Patience, my friend.', reply_markup=keyboard_cancel_input2)
@@ -425,7 +440,8 @@ class MainBody(telepot.helper.ChatHandler):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         if query_data == 'seller_cancel':
             self.stage = '00'
-            good['chat_id'] = chat_id
+            good = {}
+            good['chat_id'] = from_id
             good['time'] = str(datetime.now())
             # debug!!!===========================
             pprint(good)
