@@ -1,15 +1,17 @@
-#  First written on 02/10/17, based on body 0.2.3
-#  TODO Integrate ZZSearch2, Markup formatting of message, edge cases, wrapping in functions, remove another after removing
+# First written on 02/10/17, based on body 0.2.3
 # Removed the function to save in Excel file
 # Wrapped buyer-side features into two functions: buyer_func and buyer_selectItem
 # Added new categories: furniture&home, Clothing&Accessories, Electronic gadgets
+# Seller can now cancel his input at any point of time
+# A reference price is now provided if a seller wants to sell a computer or a book, and if
+# A buyer is viewing a computer or a book
 
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from telepot.delegate import pave_event_space, create_open, per_chat_id
 from Goods import save_to_json, retrieve_items, fetch_item_type
-from ZZsearch import split_keywords, search_amazon, search_carousell
+from ZZsearch import search_amazon, search_carousell, carousell_price
 import time
 from datetime import datetime
 import json
@@ -50,6 +52,7 @@ from pprint import pprint
     Others:
     41: description
     42: price
+    
     43: photo
     44: contact details 
     
@@ -77,6 +80,10 @@ keyboard_type = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text
                                                       [InlineKeyboardButton(text='Electronic Gadgets', callback_data='gadgets')],
                                                       [InlineKeyboardButton(text='Others', callback_data='others')]
                                                       ])
+
+keyboard_cancel_input = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Cancel', callback_data='seller_cancel')]])
+keyboard_cancel_input2 = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Back to Start', callback_data='seller_cancel')]])
+
 
 chat_id = ""
 
@@ -159,10 +166,14 @@ class MainBody(telepot.helper.ChatHandler):
                 item_viewed['brand'], item_viewed['model'], item_viewed['price'], item_viewed['description'],
                 item_viewed['time'][0:10], item_viewed['contact'])
 
+            keyword = item_viewed['brand']+" "+ item_viewed['model']
+
         elif self.typeViewing == 'book':
             answer = "Title: {0}\nAuthor: {1}\nPrice: {2}\nDescription: {3}\nPosted on {4}\nContact Details:{5}\n".format(
                 item_viewed['title'], item_viewed['author'], item_viewed['price'], item_viewed['description'],
                 item_viewed['time'][0:10], item_viewed['contact'])
+
+            keyword = item_viewed['title']+" "+item_viewed['author']
 
         elif self.typeViewing == 'stationery':
             answer = "Type: {0}\nPrice: {1}\nDescription: {2}\nPosted on {3}\nContact Details:{4}\n".format(
@@ -178,17 +189,21 @@ class MainBody(telepot.helper.ChatHandler):
             self.sender.sendPhoto(item_viewed['photo'])
 
         keyboard_viewAnother = InlineKeyboardMarkup(
-            inline_keyboard=[[InlineKeyboardButton(text='View Another', callback_data=self.typeViewing)]])
+            inline_keyboard=[[InlineKeyboardButton(text='View Another', callback_data=self.typeViewing)],
+                             ])
         self.sender.sendMessage(
             "If you are interested, please contact the seller through the details provided above. Else, click the button below to check out another item.",
             reply_markup=keyboard_viewAnother)
+
+        return keyword
+
 
     def save_photo(self):
         photo_info = bot.getUpdates()
         file_id = photo_info[0]['message']['photo'][0]['file_id']
         good['photo'] = file_id
         self.sender.sendMessage(
-            'We have saved the photo for you! Now please provide your contact details and preferred location for meet-up.')
+            'We have saved the photo for you! Now please provide your contact details and preferred location for meet-up.', reply_markup=keyboard_cancel_input)
 
     def on_chat_message(self, msg):
         global chat_id
@@ -199,11 +214,11 @@ class MainBody(telepot.helper.ChatHandler):
             if self.stage == '00':  # if this is the greeting
                 good['chat_id'] = chat_id
                 good['time'] = str(datetime.now())
-                self.sender.sendMessage('Yo welcome! Are you a seller or a buyer?',
+                self.sender.sendMessage('Yo welcome! Are you a seller or a buyer?\nWarning: Conversation will reset after 180 seconds of inactivity.',
                                         reply_markup=keyboard_0)
 
             elif self.stage == '14' or self.stage == '24' or self.stage == '33' or self.stage == '53':
-                self.sender.sendMessage('A picture speaks a thousand words. Please send a photo.')
+                self.sender.sendMessage('A picture speaks a thousand words. Please send a photo.', reply_markup=keyboard_cancel_input)
 
             else:  # self.stage >= 02, meaning that type has been defined.
                 if good['type'] == 'computer':
@@ -211,139 +226,142 @@ class MainBody(telepot.helper.ChatHandler):
                         self.stage = '11'
                         good['brand'] = msg['text']
                         self.sender.sendMessage(
-                            'Brand recorded! Now what is the model? Simply put "idk" if you are not sure!')
+                            'Brand recorded! Now what is the model? Simply put "idk" if you are not sure!', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '11':
                         self.stage = '12'
                         good['model'] = msg['text']
-                        self.sender.sendMessage('Model recorded! How much do you want to sell it for?')
+                        print(good['brand']+good['model'])
+                        self.sender.sendMessage('Model recorded! How much do you want to sell it for?\nSuggested price from Carousell: ${0}'.format(carousell_price(good['brand']+" "+good['model'])),
+                                                reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '12':
                         self.stage = '13'
                         good['price'] = msg['text']
-                        self.sender.sendMessage('Price recorded! Now just tell us more details about the computer.')
+                        self.sender.sendMessage('Price recorded! Now just tell us more details about the computer.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '13':
                         self.stage = '14'
                         good['description'] = msg['text']
-                        self.sender.sendMessage('We\'ve noted that down! Now please send us a photo of the computer.')
+                        self.sender.sendMessage('We\'ve noted that down! Now please send us a photo of the computer.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '15':
                         self.stage = '16'
                         good['contact'] = msg['text']
                         self.sender.sendMessage(
-                            'We\'ve recorded that down. Now just wait patiently for anyone interested to contact you...')
+                            'We\'ve recorded that down. Now just wait patiently for anyone interested to contact you...', reply_markup=keyboard_cancel_input2)
                         # the following line saves the 'good' object to the .txt file
                         save_to_json(good)
 
                     elif self.stage == '16':
-                        self.sender.sendMessage('Wait patiently lah pls.')
+                        self.sender.sendMessage('Wait patiently lah pls.', reply_markup=keyboard_cancel_input2)
 
                 elif good['type'] == 'book':
                     if self.stage == '02':
                         self.stage = '21'
                         good['title'] = msg['text']
-                        self.sender.sendMessage('Title recorded, please tell us the author now.')
+                        self.sender.sendMessage('Title recorded, please tell us the author now.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '21':
                         self.stage = '22'
                         good['author'] = msg['text']
-                        self.sender.sendMessage('Author recorded. Now how much do you wanna sell it for?')
+                        self.sender.sendMessage('Author recorded. Now how much do you wanna sell it for?\nSuggested price from Carousell: ${0}'.format(carousell_price(good['title']+" "+good['author'])),
+                                                reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '22':
                         self.stage = '23'
                         good['price'] = msg['text']
-                        self.sender.sendMessage('Price recorded. Tell us more about the book now.')
+                        self.sender.sendMessage('Price recorded. Tell us more about the book now.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '23':
                         self.stage = '24'
                         good['description'] = msg['text']
-                        self.sender.sendMessage('Okay. Now please send us a photo of the book.')
+                        self.sender.sendMessage('Okay. Now please send us a photo of the book.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '25':
                         self.stage = '26'
                         good['contact'] = msg['text']
-                        self.sender.sendMessage('All set. Now please just wait patiently for a buyer to contact you...')
+                        self.sender.sendMessage('All set. Now please just wait patiently for a buyer to contact you...', reply_markup=keyboard_cancel_input2)
                         save_to_json(good)
 
                     elif self.stage == '26':
-                        self.sender.sendMessage('Patience, friend, patience.')
+                        self.sender.sendMessage('Patience, friend, patience.', reply_markup=keyboard_cancel_input2)
 
                 elif good['type'] == 'stationery':
                     if self.stage == '02':
                         self.stage = '31'
                         good['kind'] = msg['text']
-                        self.sender.sendMessage('Okay, how much do you wanna sell it for?')
+                        self.sender.sendMessage('Okay, how much do you wanna sell it for?', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '31':
                         self.stage = '32'
                         good['price'] = msg['text']
-                        self.sender.sendMessage('Fine. Now please describe it a bit more.')
+                        self.sender.sendMessage('Fine. Now please describe it a bit more.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '32':
                         self.stage = '33'
                         good['description'] = msg['text']
-                        self.sender.sendMessage('Okay, now please send us a photo of it.')
+                        self.sender.sendMessage('Okay, now please send us a photo of it.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '34':
                         self.stage = '35'
                         good['contact'] = msg['text']
-                        self.sender.sendMessage('Great. Now just wait for a buyer to contact you.')
+                        self.sender.sendMessage('Great. Now just wait for a buyer to contact you.', reply_markup=keyboard_cancel_input2)
                         save_to_json(good)
 
                     elif self.stage == '35':
-                        self.sender.sendMessage('Patience lah pls')
+                        self.sender.sendMessage('Patience lah pls', reply_markup=keyboard_cancel_input2)
 
                 elif good['type'] == 'others':
                     if self.stage == '02':
                         self.stage = '41'
                         good['description'] = msg['text']
-                        self.sender.sendMessage('Okay, how much do you wanna sell it for?')
+                        self.sender.sendMessage('Okay, how much do you wanna sell it for?', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '41':
                         self.stage = '42'
                         good['price'] = msg['text']
                         self.sender.sendMessage(
-                            'The price has been recorded. Now please send a photo of the good, or if a photo is not available, please tell us.')
+                            'The price has been recorded. Now please send a photo of the good, or if a photo is not available, please tell us.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '42':
                         self.stage = '43'
                         self.sender.sendMessage(
-                            'Alright, no photos for now. Just provide your contact details and preferred location for meet-up, and we\'ll be done.')
+                            'Alright, no photos for now. Just provide your contact details and preferred location for meet-up, and we\'ll be done.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '43':
                         self.stage = '44'
                         good['contact'] = msg['text']
-                        self.sender.sendMessage('We have recorded that down. Now just wait patiently for a buyer...')
+                        self.sender.sendMessage('We have recorded that down. Now just wait patiently for a buyer...', reply_markup=keyboard_cancel_input2)
                         save_to_json(good)
 
                     elif self.stage == '44':
-                        self.sender.sendMessage('Patience lah bro, it will sell.')
+                        self.sender.sendMessage('Patience lah bro, it will sell.', reply_markup=keyboard_cancel_input2)
 
                 elif good['type'] == 'furniture&home' or good['type'] == 'clothing&accessories' or good['type'] == 'gadgets':
                     if self.stage == '02':
                         self.stage = '51'
                         good['title'] = msg['text']
-                        self.sender.sendMessage('That\'s nice. Now please provide a more detailed description of the item.')
+                        self.sender.sendMessage('That\'s nice. Now please provide a more detailed description of the item.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '51':
                         self.stage = '52'
                         good['description'] = msg['text']
-                        self.sender.sendMessage('We have recorded that down. Now please tell us how much you wanna sell the item for.')
+                        self.sender.sendMessage('We have recorded that down. Now please tell us how much you wanna sell the item for.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '52':
                         self.stage = '53'
                         good['price'] = msg['text']
-                        self.sender.sendMessage('Price recorded. Now please send a photo of the item.')
+                        self.sender.sendMessage('Price recorded. Now please send a photo of the item.', reply_markup=keyboard_cancel_input)
 
                     elif self.stage == '54':
                         self.stage = '55'
                         good['contact'] = msg['text']
-                        self.sender.sendMessage('The information has been recorded. Now just wait patiently for a buyer.')
+                        self.sender.sendMessage('The information has been recorded. Now just wait patiently for a buyer.', reply_markup=keyboard_cancel_input2)
                         save_to_json(good)
 
                     elif self.stage == '55':
-                        self.sender.sendMessage('Patience, my friend.')
+                        self.sender.sendMessage('Patience, my friend.', reply_markup=keyboard_cancel_input2)
 
 
         elif content_type == 'photo':
@@ -369,17 +387,23 @@ class MainBody(telepot.helper.ChatHandler):
 
             else:
                 self.sender.sendMessage(
-                    'A photo? Not really what we expected here... Maybe you should have talked instead?')
+                    'A photo? Not really what we expected here... Maybe you should have talked instead?', reply_markup=keyboard_cancel_input)
 
     def on_callback_query(self, msg):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
+        if query_data == 'seller_cancel':
+            self.stage = '00'
+            good['chat_id'] = chat_id
+            good['time'] = str(datetime.now())
+            self.sender.sendMessage('Yo welcome! Are you a seller or a buyer?\nWarning: Conversation will reset after 180 seconds of inactivity.',
+                                        reply_markup=keyboard_0)
 
         if self.stage == '00':  # if user has pressed keyboard_0
             if query_data == 'sell':
                 self.stage = 'Seller_PorR'  # Update self.stage to 'now choosing post or edit'
                 self.BuyOrSell = 'Sell'
                 self.sender.sendMessage(
-                    'You are a seller! Are you gonna post a new item or remove an item you have posted?',
+                    'You are a seller! Are you gonna post a new item or remove an item you have posted? Please remember to remove your item once it\'s sold!',
                     reply_markup=keyboard_PostOrRemove)
 
             elif query_data == 'buy':
@@ -393,19 +417,19 @@ class MainBody(telepot.helper.ChatHandler):
             if self.BuyOrSell == 'Sell':
                 good['type'] = query_data
                 if query_data == 'computer':
-                    self.sender.sendMessage('A computer! What brand is it?')
+                    self.sender.sendMessage('A computer! What brand is it?', reply_markup=keyboard_cancel_input)
 
                 elif query_data == 'book':
-                    self.sender.sendMessage('A book! What is the title?')
+                    self.sender.sendMessage('A book! What is the title?', reply_markup=keyboard_cancel_input)
 
                 elif query_data == 'stationery':
-                    self.sender.sendMessage('What kind of stationery is it?')
+                    self.sender.sendMessage('What kind of stationery is it?', reply_markup=keyboard_cancel_input)
 
                 elif query_data == 'others':
-                    self.sender.sendMessage('Hmm okay, why not tell us more about it?')
+                    self.sender.sendMessage('Hmm okay, why not tell us more about it?', reply_markup=keyboard_cancel_input)
 
                 elif query_data == 'furniture&home' or query_data == 'clothing&accessories' or query_data == 'gadgets':
-                    self.sender.sendMessage('Okay, what is it? Give us a short title that will attract buyers!')
+                    self.sender.sendMessage('Okay, what is it? Give us a short title that will attract buyers!', reply_markup=keyboard_cancel_input)
 
                 # After this block the buyer sends a text, which brings us back to on_chat_message
 
@@ -421,7 +445,7 @@ class MainBody(telepot.helper.ChatHandler):
             elif query_data == 'remove':
                 l = retrieve_items(chat_id)
                 if l == []:
-                    self.stage = "01"
+                    self.stage = '01'
                     self.sender.sendMessage(
                         'You have no item posted. To post a new item, start by choosing a category from below.',
                         reply_markup=keyboard_type)
@@ -495,20 +519,24 @@ class MainBody(telepot.helper.ChatHandler):
                                                                                              callback_data='post')]]))
 
         elif self.stage == 'Buyer_SelectItem':
-            if query_data != 'cancel':
-                self.stage = '01'  # get ready to be sent back to choosing another item of the same type
-                MainBody.buyer_selectItem(self, query_data)
+            self.stage = '01'
+            if query_data != 'cancel':  # get ready to be sent back to choosing another item of the same type
+                keyword = MainBody.buyer_selectItem(self, query_data)
+
+                if keyword != None:
+                    carousell_url = search_carousell(keyword)
+                    self.sender.sendMessage('A Carousell page of similar search results has been fetched for your reference:\n' + carousell_url)
+
 
             else:  # query_data == 'cancel', buyer wants to choose another type of goods
-                self.stage = '01'
                 self.sender.sendMessage('Okay! Which type of good do you wanna check out this time?',
                                         reply_markup=keyboard_type)
 
         bot.answerCallbackQuery(query_id)
 
 
-bot = telepot.DelegatorBot("421312469:AAHaMT4m9299GcHTyIPDj8rzfx0M-oFJBmw",
-                           [pave_event_space()(per_chat_id(), create_open, MainBody, timeout=60)])
+bot = telepot.DelegatorBot('396242409:AAFPS04xPoPAxRx9YlAopslwP6HJojLQR4c',
+                           [pave_event_space()(per_chat_id(), create_open, MainBody, timeout=180)])
 
 MessageLoop(bot).run_as_thread()
 
