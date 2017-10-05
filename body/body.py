@@ -231,6 +231,8 @@ class MainBody(telepot.helper.ChatHandler):
                         good['brand'] = msg['text']
                         self.sender.sendMessage(
                             'Brand recorded! Now what is the model? Simply put "idk" if you are not sure!', reply_markup=keyboard_cancel_input)
+                        # the following line is for debugging
+                        pprint(good)
 
                     elif self.stage == '11':
                         self.stage = '12'
@@ -238,16 +240,19 @@ class MainBody(telepot.helper.ChatHandler):
                         print(good['brand']+good['model'])
                         self.sender.sendMessage('Model recorded! How much do you want to sell it for?\nSuggested price from Carousell: ${0}'.format(carousell_price(good['brand']+" "+good['model'])),
                                                 reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '12':
                         self.stage = '13'
                         good['price'] = msg['text']
                         self.sender.sendMessage('Price recorded! Now just tell us more details about the computer.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '13':
                         self.stage = '14'
                         good['description'] = msg['text']
                         self.sender.sendMessage('We\'ve noted that down! Now please send us a photo of the computer.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '15':
                         self.stage = '16'
@@ -255,6 +260,7 @@ class MainBody(telepot.helper.ChatHandler):
                         self.sender.sendMessage(
                             'We\'ve recorded that down. Now just wait patiently for anyone interested to contact you...', reply_markup=keyboard_cancel_input2)
                         # the following line saves the 'good' object to the .txt file
+                        pprint(good)
                         save_to_json(good)
 
                     elif self.stage == '16':
@@ -265,27 +271,32 @@ class MainBody(telepot.helper.ChatHandler):
                         self.stage = '21'
                         good['title'] = msg['text']
                         self.sender.sendMessage('Title recorded, please tell us the author now.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '21':
                         self.stage = '22'
                         good['author'] = msg['text']
                         self.sender.sendMessage('Author recorded. Now how much do you wanna sell it for?\nSuggested price from Carousell: ${0}'.format(carousell_price(good['title']+" "+good['author'])),
                                                 reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '22':
                         self.stage = '23'
                         good['price'] = msg['text']
                         self.sender.sendMessage('Price recorded. Tell us more about the book now.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '23':
                         self.stage = '24'
                         good['description'] = msg['text']
                         self.sender.sendMessage('Okay. Now please send us a photo of the book.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '25':
                         self.stage = '26'
                         good['contact'] = msg['text']
                         self.sender.sendMessage('All set. Now please just wait patiently for a buyer to contact you...', reply_markup=keyboard_cancel_input2)
+                        pprint(good)
                         save_to_json(good)
 
                     elif self.stage == '26':
@@ -296,21 +307,25 @@ class MainBody(telepot.helper.ChatHandler):
                         self.stage = '31'
                         good['kind'] = msg['text']
                         self.sender.sendMessage('Okay, how much do you wanna sell it for?', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '31':
                         self.stage = '32'
                         good['price'] = msg['text']
                         self.sender.sendMessage('Fine. Now please describe it a bit more.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '32':
                         self.stage = '33'
                         good['description'] = msg['text']
                         self.sender.sendMessage('Okay, now please send us a photo of it.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '34':
                         self.stage = '35'
                         good['contact'] = msg['text']
                         self.sender.sendMessage('Great. Now just wait for a buyer to contact you.', reply_markup=keyboard_cancel_input2)
+                        pprint(good)
                         save_to_json(good)
 
                     elif self.stage == '35':
@@ -321,22 +336,26 @@ class MainBody(telepot.helper.ChatHandler):
                         self.stage = '41'
                         good['description'] = msg['text']
                         self.sender.sendMessage('Okay, how much do you wanna sell it for?', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '41':
                         self.stage = '42'
                         good['price'] = msg['text']
                         self.sender.sendMessage(
                             'The price has been recorded. Now please send a photo of the good, or if a photo is not available, please tell us.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '42':
                         self.stage = '43'
                         self.sender.sendMessage(
                             'Alright, no photos for now. Just provide your contact details and preferred location for meet-up, and we\'ll be done.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '43':
                         self.stage = '44'
                         good['contact'] = msg['text']
                         self.sender.sendMessage('We have recorded that down. Now just wait patiently for a buyer...', reply_markup=keyboard_cancel_input2)
+                        pprint(good)
                         save_to_json(good)
 
                     elif self.stage == '44':
@@ -347,21 +366,25 @@ class MainBody(telepot.helper.ChatHandler):
                         self.stage = '51'
                         good['title'] = msg['text']
                         self.sender.sendMessage('That\'s nice. Now please provide a more detailed description of the item.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '51':
                         self.stage = '52'
                         good['description'] = msg['text']
                         self.sender.sendMessage('We have recorded that down. Now please tell us how much you wanna sell the item for.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '52':
                         self.stage = '53'
                         good['price'] = msg['text']
                         self.sender.sendMessage('Price recorded. Now please send a photo of the item.', reply_markup=keyboard_cancel_input)
+                        pprint(good)
 
                     elif self.stage == '54':
                         self.stage = '55'
                         good['contact'] = msg['text']
                         self.sender.sendMessage('The information has been recorded. Now just wait patiently for a buyer.', reply_markup=keyboard_cancel_input2)
+                        pprint(good)
                         save_to_json(good)
 
                     elif self.stage == '55':
@@ -372,22 +395,27 @@ class MainBody(telepot.helper.ChatHandler):
             if self.stage == '14':
                 self.stage = '15'
                 MainBody.save_photo(self)
+                pprint(good)
 
             elif self.stage == '24':
                 self.stage = '25'
                 MainBody.save_photo(self)
+                pprint(good)
 
             elif self.stage == '33':
                 self.stage = '34'
                 MainBody.save_photo(self)
+                pprint(good)
 
             elif self.stage == '42':
                 self.stage = '43'
                 MainBody.save_photo(self)
+                pprint(good)
 
             elif self.stage == '53':
                 self.stage = '54'
                 MainBody.save_photo(self)
+                pprint(good)
 
             else:
                 self.sender.sendMessage(
@@ -399,6 +427,8 @@ class MainBody(telepot.helper.ChatHandler):
             self.stage = '00'
             good['chat_id'] = chat_id
             good['time'] = str(datetime.now())
+            # debug!!!===========================
+            pprint(good)
             self.sender.sendMessage('Yo welcome! Are you a seller or a buyer?\nWarning: Conversation will reset after 180 seconds of inactivity.',
                                         reply_markup=keyboard_0)
 
@@ -436,6 +466,7 @@ class MainBody(telepot.helper.ChatHandler):
                     self.sender.sendMessage('Okay, what is it? Give us a short title that will attract buyers!', reply_markup=keyboard_cancel_input)
 
                 # After this block the buyer sends a text, which brings us back to on_chat_message
+                pprint(good)
 
             elif self.BuyOrSell == 'Buy':
                 MainBody.buyer_func(self, query_data)
