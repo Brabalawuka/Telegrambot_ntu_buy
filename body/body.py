@@ -183,9 +183,13 @@ class MainBody(telepot.helper.ChatHandler):
             answer = "Type: {0}\nPrice: {1}\nDescription: {2}\nPosted on {3}\nContact Details:{4}\n".format(
                 item_viewed['type'], item_viewed['price'], item_viewed['description'], item_viewed['time'][0:10],
                 item_viewed['contact'])
+            
+            keyword = item_viewed['title']+" "+item_viewed['author']
 
         elif self.typeViewing == 'others' or self.typeViewing == 'furniture&home' or self.typeViewing == 'clothing&accessories' or self.typeViewing == 'gadgets':
             answer = "Description: {0}\nPrice: {1}\nContact Details: {2}".format(item_viewed['description'], item_viewed['price'], item_viewed['contact'])
+            
+            keyword = item_viewed['title']+" "+item_viewed['author']
 
         self.sender.sendMessage(answer)
 
