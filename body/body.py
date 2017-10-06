@@ -216,7 +216,7 @@ class MainBody(telepot.helper.ChatHandler):
         # 2 initialisation stage? assume not, good type must have been specified!
         if content_type == 'text':
             if self.stage == '00':  # if this is the greeting
-                good = {} #??????????????????????????????????????????????????????????????????????
+                #good = {} #??????????????????????????????????????????????????????????????????????
                 good['chat_id'] = chat_id
                 good['time'] = str(datetime.now())
                 self.sender.sendMessage('Yo welcome! Are you a seller or a buyer?\nWarning: Conversation will reset after 180 seconds of inactivity.',
@@ -264,7 +264,7 @@ class MainBody(telepot.helper.ChatHandler):
                         pprint(good)
                         save_to_json(good)
                   #====================================================
-                        good = {}
+                        #good = {}
                   #===============================      
 
                     elif self.stage == '16':
@@ -303,7 +303,7 @@ class MainBody(telepot.helper.ChatHandler):
                         pprint(good)
                         save_to_json(good)
                  #====================================================
-                        good = {}
+                       # good = {}
                   #===============================   
 
                     elif self.stage == '26':
@@ -335,7 +335,7 @@ class MainBody(telepot.helper.ChatHandler):
                         pprint(good)
                         save_to_json(good)
                   #====================================================
-                        good = {}
+                      #  good = {}
                   #===============================   
 
                     elif self.stage == '35':
@@ -368,7 +368,7 @@ class MainBody(telepot.helper.ChatHandler):
                         pprint(good)
                         save_to_json(good)
                   #====================================================
-                        good = {}
+                   #     good = {}
                   #===============================   
 
                     elif self.stage == '44':
@@ -400,7 +400,7 @@ class MainBody(telepot.helper.ChatHandler):
                         pprint(good)
                         save_to_json(good)
                   #====================================================
-                        good = {}
+                    #    good = {}
                   #===============================   
 
                     elif self.stage == '55':
@@ -441,7 +441,7 @@ class MainBody(telepot.helper.ChatHandler):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         if query_data == 'seller_cancel':
             self.stage = '00'
-            good = {}
+          #  good = {}
             good['chat_id'] = from_id
             good['time'] = str(datetime.now())
             # debug!!!===========================
